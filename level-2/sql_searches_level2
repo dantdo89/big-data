@@ -1,0 +1,152 @@
+-- TOTALS
+--Total book reviews (3105360)
+SELECT COUNT(*) FROM review_id_table;
+
+--Total e_book reviews (5101476)
+SELECT COUNT(*) FROM e_review_id_table;
+
+--Total book unique customers (1502331)
+SELECT COUNT(*) FROM customers;
+
+--Total e_book unique e_customers (2062116)
+SELECT COUNT(*) FROM e_customers;
+
+--Total unique products (779717)
+SELECT COUNT(*) FROM products;
+
+--Total unique e_products (649977)
+SELECT COUNT(*) FROM e_products;
+
+--- ==============================================
+
+-- Using Union to combine rows and calculate the total number of reviews.
+-- Book reviews
+
+SELECT COUNT(*)
+FROM
+(	SELECT c.review_id
+	FROM review_id_table c
+	UNION
+	SELECT e.review_id
+	FROM e_review_id_table e
+) T;
+
+-- ==========================================================
+-- Customers with higher number of reviews
+SELECT customer_id, product_id, COUNT(review_id) as "Number Reviews"
+FROM
+(	SELECT c.customer_id, c.product_id, c.review_id
+	FROM review_id_table c
+	UNION
+	SELECT e.customer_id, e.product_id, e.review_id
+	FROM e_review_id_table e
+) T
+GROUP BY customer_id, product_id
+ORDER BY "Number Reviews" DESC;
+
+--- Customers with higher number of reviews by product . Regular books
+SELECT product_id, customer_id, COUNT(review_id) as "Number Reviews"
+FROM review_id_table
+GROUP BY  product_id, customer_id
+ORDER BY "Number Reviews" DESC LIMIT 10
+
+--- Customers with higher number of reviews by product . Regular books
+SELECT customer_id, COUNT(review_id) as "Number Reviews"
+FROM review_id_table
+GROUP BY customer_id
+ORDER BY "Number Reviews" DESC LIMIT 10
+
+--- Customers with higher number of reviews by product . ebooks
+SELECT product_id, customer_id, COUNT(review_id) as "Number Reviews"
+FROM e_review_id_table
+GROUP BY  product_id, customer_id
+ORDER BY "Number Reviews" DESC LIMIT 10
+
+--- Customers with higher number of reviews by product . ebooks
+SELECT customer_id, COUNT(review_id) as "Number Reviews"
+FROM e_review_id_table
+GROUP BY customer_id
+ORDER BY "Number Reviews" DESC LIMIT 10
+
+-- Top 10 products
+
+--Top 10 products with more reviews books
+SELECT rev.product_id, prod.product_title, COUNT(*) 
+FROM review_id_table AS rev, products AS prod
+WHERE rev.product_id = prod.product_id
+-- and rev.product_id='043935806X'
+GROUP BY rev. product_id, prod.product_title
+ORDER BY COUNT(*) DESC LIMIT 10;
+
+
+--Top 10 products with more reviews e books
+SELECT rev.product_id, prod.product_title, COUNT(*) 
+FROM e_review_id_table AS rev, e_products AS prod
+WHERE rev.product_id = prod.product_id
+GROUP BY rev. product_id, prod.product_title
+ORDER BY COUNT(*) DESC LIMIT 10;
+
+
+--Top 10 products with more reviews e books
+SELECT product_id, product_title, COUNT(*)
+FROM
+(   SELECT rev.product_id, prod.product_title--, COUNT(*) 
+    FROM review_id_table AS rev, products AS prod
+    WHERE rev.product_id = prod.product_id
+ 	--and rev.product_id='043935806X'
+ 	--GROUP BY rev. product_id, prod.product_title
+    
+ UNION ALL
+ 
+ 	SELECT rev2.product_id, prod2.product_title
+	FROM e_review_id_table AS rev2, e_products AS prod2
+	WHERE rev2.product_id = prod2.product_id
+ 	--and rev2.product_id = 'B007J4T2G8'
+) E
+--where product_id='043935806X'
+GROUP BY product_id, product_title
+ORDER BY COUNT(*) DESC LIMIT 10;
+
+SELECT rev.product_id, prod.product_title --, COUNT(*) 
+    FROM review_id_table AS rev, products AS prod
+    WHERE rev.product_id = prod.product_id 
+	and rev.product_id = "043935806X"
+	
+
+
+-- ===============================================================
+-- Vine reviews for regular books top 10 customers
+SELECT rev.customer_id, star_rating, COUNT(*) as "Rating Counts"
+FROM vine_table AS vine, review_id_table AS rev
+WHERE vine.review_id = rev.review_id AND vine = 'Y'
+GROUP BY customer_id, star_rating
+ORDER BY COUNT(*) DESC LIMIT 10;
+
+
+-- Vine reviews for regular books top 10 customers
+SELECT customer_id, star_rating, COUNT(*) as "Rating Counts"
+FROM vine_table AS vine, review_id_table AS rev
+WHERE vine.review_id = rev.review_id AND vine = 'N'
+GROUP BY customer_id, star_rating
+ORDER BY COUNT(*) DESC LIMIT 10;
+
+-- Vine reviews for e_books top 5 customers
+SELECT customer_id, star_rating, COUNT(*)
+FROM e_vine_table AS vine, e_review_id_table AS rev
+WHERE vine.review_id = rev.review_id AND vine = 'Y'
+GROUP BY customer_id, star_rating
+ORDER BY COUNT(*) DESC;-- LIMIT 5;
+
+-- Vine reviews for e_books top 5 customers
+SELECT customer_id, star_rating, COUNT(*)
+FROM e_vine_table AS vine, e_review_id_table AS rev
+WHERE vine.review_id = rev.review_id AND vine = 'N'
+GROUP BY customer_id, star_rating
+ORDER BY COUNT(*) DESC;-- LIMIT 5;
+
+
+
+
+
+
+
